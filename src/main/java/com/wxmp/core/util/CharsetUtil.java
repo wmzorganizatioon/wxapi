@@ -47,7 +47,7 @@ public class CharsetUtil {
 		return Charset.defaultCharset().toString();
 	}
 	/**
-	 * 获得远程URL文件的编码格式
+	 * 获得远程URL文件的编码格式 让我们荡起双桨
 	 * @param url
 	 * @return
 	 */
