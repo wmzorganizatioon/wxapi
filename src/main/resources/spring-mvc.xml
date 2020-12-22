@@ -53,7 +53,7 @@
     <!-- 开启aop支持，动态代理支持-->
     <aop:aspectj-autoproxy expose-proxy="true" proxy-target-class="true"/>
     <!-- 拦截器-->
-    <mvc:interceptors>
+    <!--<mvc:interceptors>
         <bean class="com.wxmp.core.interceptor.AuthInterceptor">
             <property name="allowUrls">
                 <list>
@@ -67,5 +67,5 @@
                 </list>
             </property>
         </bean>
-    </mvc:interceptors>
+    </mvc:interceptors>-->
 </beans>

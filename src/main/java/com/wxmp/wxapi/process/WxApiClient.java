@@ -23,13 +23,14 @@ import java.util.*;
 
 import com.wxmp.core.exception.WxError;
 import com.wxmp.core.util.wx.WxUtil;
+import com.wxmp.wxcms.domain.AccessTokens;
+import com.wxmp.wxcms.mapper.AccessTokenDao;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.wxmp.core.common.Identities;
 import com.wxmp.core.exception.WxErrorException;
 import com.wxmp.core.util.DateUtil;
 import com.wxmp.wxapi.vo.Material;
@@ -39,23 +40,90 @@ import com.wxmp.wxapi.vo.TemplateMessage;
 import com.wxmp.wxcms.domain.AccountFans;
 import com.wxmp.wxcms.domain.MsgNews;
 
+import javax.annotation.Resource;
+
 /**
  * 微信 客户端，统一处理微信相关接口
  */
 @Component
 public class WxApiClient {
+
+    @Resource
+    private AccessTokenDao accessTokenDao;
     
     private static Logger logger = Logger.getLogger(WxApiClient.class);
-    
+
+    /**
+     *@Author 86151
+     *@Date 2020/12/21 17:04
+     *Description 此为新的后台调用接口
+     * * @param  : mpAccount
+     * * @return : java.lang.String
+     */
+    public static String getAccessTokens(MpAccount mpAccount)
+            throws WxErrorException {
+        WxApiClient wxApiClient = new WxApiClient();
+        //return wxApiClient.GetAccessToken(mpAccount);
+        return null;
+    }
+
+    /**
+     *@Author 86151
+     *@Date 2020/12/21 17:13
+     *Description 非静态方法
+     * * @param  : mpAccount
+     * * @return : java.lang.String
+     */
+    /*public String GetAccessToken (MpAccount mpAccount) throws WxErrorException{
+        // 获取唯一的accessToken，如果是多账号，请自行处理
+        AccessToken token = null;
+        // 获取当前的开始时间
+        String time = String.valueOf(new Date().getTime() / 1000);
+        String startTime = null;
+        if (time.length() > 3) {
+            startTime = time.substring(0,time.length() - 3);
+        } else {
+            startTime = null;
+        }
+        // 查询是否存在此appid
+        AccessTokens accessToken1 = accessTokenDao.getById(mpAccount.getAppid());
+        // 新增存在appid有问题,去判断
+        if (accessToken1 == null) {
+            token = WxApi.getAccessToken(mpAccount.getAppid(), mpAccount.getAppsecret());
+            if (token.getErrcode() == null) {
+                AccessTokens accessToken3 = new AccessTokens(mpAccount.getAppid(), mpAccount.getAppsecret(),
+                        token.getAccessToken(),
+                        String.valueOf((new Date().getTime() / 1000)).substring(0,time.length() - 3));
+                accessTokenDao.add(accessToken3);
+                return token.getAccessToken();
+            }
+            return null;
+        }
+        long end = Long.parseLong(accessToken1.getCreateTime());
+        long start = Long.parseLong(startTime);
+        // 超过两小时，修改数据库调接口
+        if ((end - start) >= 7200) {
+            token = WxApi.getAccessToken(mpAccount.getAppid(), mpAccount.getAppsecret());
+            AccessTokens accessToken3 = new AccessTokens(accessToken1.getId(),mpAccount.getAppid(), mpAccount.getAppsecret(),
+                    token.getAccessToken(),
+                    String.valueOf((new Date().getTime() / 1000)).substring(0,time.length() - 3));
+            accessTokenDao.update(accessToken3);
+            return token.getAccessToken();
+        } else {
+            return accessToken1.getAccessToken();
+        }
+    }*/
+
     // 获取accessToken
     public static String getAccessToken(MpAccount mpAccount)
         throws WxErrorException {
         // 获取唯一的accessToken，如果是多账号，请自行处理
-        AccessToken token = WxMemoryCacheClient.getAccessToken();
+        com.wxmp.wxapi.process.AccessToken token = WxMemoryCacheClient.getAccessToken();
         if (token != null && !token.isExpires() && WxApi.getCallbackIp(token.getAccessToken())) {// 不为空，并且没有过期
             logger.info("服务器缓存 accessToken == " + token.toString());
             return token.getAccessToken();
         } else {
+        // 获取库中先有的时间
             token = WxApi.getAccessToken(mpAccount.getAppid(), mpAccount.getAppsecret());
             if (token != null) {
                 if (token.getErrcode() == null) {

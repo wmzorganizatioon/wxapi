@@ -19,22 +19,15 @@
 package com.wxmp.wxapi.ctrl;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.wxmp.core.common.EchartsData;
-import com.wxmp.core.common.Series;
 import com.wxmp.core.exception.WxErrorException;
-import org.apache.commons.collections.CollectionUtils;
+import com.wxmp.wxapi.process.*;
+import com.wxmp.wxcms.domain.AccessTokens;
+import com.wxmp.wxcms.mapper.AccessTokenDao;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -46,24 +39,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.wxmp.core.common.BaseCtrl;
-import com.wxmp.core.exception.BusinessException;
-import com.wxmp.core.spring.JsonView;
 import com.wxmp.core.util.AjaxResult;
 import com.wxmp.core.util.DateUtil;
 import com.wxmp.core.util.UploadUtil;
 import com.wxmp.core.util.wx.SignUtil;
-import com.wxmp.wxapi.process.ErrCode;
-import com.wxmp.wxapi.process.MediaType;
-import com.wxmp.wxapi.process.MpAccount;
-import com.wxmp.wxapi.process.MsgType;
-import com.wxmp.wxapi.process.MsgXmlUtil;
-import com.wxmp.wxapi.process.WxApi;
-import com.wxmp.wxapi.process.WxApiClient;
-import com.wxmp.wxapi.process.WxMemoryCacheClient;
-import com.wxmp.wxapi.process.WxSign;
 import com.wxmp.wxapi.service.MyService;
 import com.wxmp.wxapi.vo.Material;
 import com.wxmp.wxapi.vo.MaterialArticle;
@@ -698,5 +679,51 @@ public class WxApiCtrl extends BaseCtrl{
 		String accessToken = WxApiClient.getAccessToken(mpAccount);
 		JSONObject result = WxApi.forDataCube(accessToken, type, start, end);
 		return AjaxResult.success(result);
+	}
+
+	/**
+	 * 统计分析
+	 * @return
+	 * @throws WxErrorException
+	 */
+	@Resource
+	private AccessTokenDao accessTokenDao;
+
+	@RequestMapping(value = "/getAccessToken", method = RequestMethod.POST)
+	@ResponseBody
+	public String getAccessTokenFroUMPS(@RequestBody MpAccount mpAccount) throws WxErrorException  {
+		// 获取唯一的accessToken，如果是多账号，请自行处理
+		AccessToken token = null;
+		// 获取当前的开始时间
+		long tt = System.currentTimeMillis();
+		//Calendar calendar = Calendar.getInstance();
+		//int second = calendar.get(Calendar.SECOND);
+		String time = String.valueOf(tt / 1000);
+		// 查询是否存在此appid
+		AccessTokens accessToken1 = accessTokenDao.getById(mpAccount.getAppid());
+		// 新增存在appid有问题,去判断
+		if (accessToken1 == null) {
+			token = WxApi.getAccessToken(mpAccount.getAppid(), mpAccount.getAppsecret());
+			if (token.getErrcode() == null) {
+				AccessTokens accessToken3 = new AccessTokens(mpAccount.getAppid(), mpAccount.getAppsecret(),
+						token.getAccessToken(),time);
+				accessTokenDao.add(accessToken3);
+				return token.getAccessToken();
+			}
+			return null;
+		}
+		long start = Long.parseLong(accessToken1.getCreateTime());
+		long end = Long.parseLong(time);
+		// 超过两小时，修改数据库调接口
+		if ((end - start) >= 7200) {
+			token = WxApi.getAccessToken(mpAccount.getAppid(), mpAccount.getAppsecret());
+			AccessTokens accessToken3 = new AccessTokens(accessToken1.getId(),mpAccount.getAppid(), mpAccount.getAppsecret(),
+					token.getAccessToken(),
+					String.valueOf(end));
+			accessTokenDao.update(accessToken3);
+			return token.getAccessToken();
+		} else {
+			return accessToken1.getAccessToken();
+		}
 	}
 }
