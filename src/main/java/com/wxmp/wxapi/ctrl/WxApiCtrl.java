@@ -759,31 +759,30 @@ public class WxApiCtrl extends BaseCtrl{
 
 	@PostMapping(value = "/ticket", produces = "text/xml;charset=utf-8")
 	@ResponseBody
-	public String getTicket(@RequestBody String postData)throws WxErrorException{
-		/*log.debug("timestamp：" + timestamp);
+	public String getTicket(@RequestParam("timestamp") String timestamp, @RequestParam("nonce") String nonce, @RequestParam("msg_signature")String msgSignature, @RequestBody String postData)throws WxErrorException{
+		log.debug("timestamp：" + timestamp);
 		log.debug("nonce：" + nonce);
-		log.debug("msgSignature：" + msgSignature);*/
+		log.debug("msgSignature：" + msgSignature);
 		log.debug("postData：" + postData);
 
 		// 微信文档问题：标签格式修改
-		//String postDataXML = postData.replaceAll("AppId","ToUserName");
+		String postDataXML = postData.replaceAll("AppId","ToUserName");
 
 		try {
 		    // 解密类型aes
-			//WXBizMsgCrypt pc = new WXBizMsgCrypt(messageCheckToken, encodingAesKey, componentAppId);
+			WXBizMsgCrypt pc = new WXBizMsgCrypt(messageCheckToken, encodingAesKey, componentAppId);
 			// 进行解密
-			//String decryData = pc.decryptMsg("4d9f1f76bf57eb0419a2867641d605a238924d6c", "1609085838", "1743602051", postDataXML);
-			// 截取xml标签内部代码
-            //String data = decryData.substring(decryData.indexOf("<xml>"),decryData.indexOf("</xml>"));
-			String data = postData.substring(5,postData.indexOf("</xml>"));
-			//log.debug("输出日志：" + data);
+			String decryData = pc.decryptMsg(msgSignature, timestamp, nonce, postDataXML);
+
+			log.debug("输出日志：" + decryData);
 			ConstantParseHandler constantParseHandler = new ConstantParseHandler();
 			// 创建解析工厂
             SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
             saxParserFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             // 创建解析
             SAXParser saxParser = saxParserFactory.newSAXParser();
-            InputSource inputSource = new InputSource(new StringReader(data));
+            InputSource inputSource = new InputSource(new StringReader(decryData));
+
             // 解析成实体类
             saxParser.parse(inputSource, constantParseHandler);
             ComponentContent componentContent = constantParseHandler.getComponentContent();
@@ -794,18 +793,27 @@ public class WxApiCtrl extends BaseCtrl{
 
 		} catch (SAXNotSupportedException e) {
             e.printStackTrace();
+            return "fail";
         } catch (SAXNotRecognizedException e) {
             e.printStackTrace();
+			return "fail";
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
+			return "fail";
         } catch (SAXException e) {
             e.printStackTrace();
+			return "fail";
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        log.debug("success");
+			return "fail";
+        } catch (AesException e) {
+			e.printStackTrace();
+			return "fail";
+		}
+		log.debug("success");
 		return "success";
 	}
+
 	@PostMapping(value = "/getcomponent_access_token")
 	@ResponseBody
 	public String getcomponent_access_token(@RequestBody JSONObject jsonObject)throws WxErrorException{

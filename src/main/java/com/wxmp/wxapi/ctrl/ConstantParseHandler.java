@@ -28,12 +28,17 @@ public class ConstantParseHandler extends DefaultHandler {
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         super.startElement(uri, localName, qName, attributes);
+        if ("xml".equals(qName)) {
+            componentContent = new ComponentContent();
+        }
         currentTag = qName;
     }
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         super.endElement(uri, localName, qName);
+        // 获取一组标签值，记得还原全局值
+        currentTag = null;
     }
 
     @Override
@@ -47,15 +52,11 @@ public class ConstantParseHandler extends DefaultHandler {
         } else if ("ComponentVerifyTicket".equals(currentTag)) {
             componentContent.setComponentVerifyTicket(value);
         } else if ("AppId".equals(currentTag)) {
-            componentContent.setAppId(value);
+            componentContent.setComponent_appid(value);
         }
     }
 
     public ComponentContent getComponentContent() {
         return componentContent;
-    }
-
-    public void setComponentContent(ComponentContent componentContent) {
-        this.componentContent = componentContent;
     }
 }

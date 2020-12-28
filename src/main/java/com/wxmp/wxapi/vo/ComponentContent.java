@@ -19,12 +19,4 @@ public class ComponentContent {
     private String infoType;
 
     private String componentVerifyTicket;
-
-    private String AppId;
-
-    private String CreateTime;
-
-    private String InfoType;
-
-    private String ComponentVerifyTicket;
 }
