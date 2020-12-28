@@ -24,6 +24,9 @@ import java.util.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.qq.weixin.mp.aes.AesException;
+import com.qq.weixin.mp.aes.WXBizMsgCrypt;
 import com.wxmp.core.exception.WxErrorException;
 import com.wxmp.wxapi.process.*;
 import com.wxmp.wxcms.domain.AccessTokens;
@@ -32,11 +35,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.alibaba.fastjson.JSONObject;
@@ -725,5 +724,30 @@ public class WxApiCtrl extends BaseCtrl{
 		} else {
 			return accessToken1.getAccessToken();
 		}
+	}
+
+	@PostMapping(value = "/ticket", produces = "text/xml;charset=utf-8")
+	@ResponseBody
+	public String getTicket(@RequestParam("timestamp") String timestamp, @RequestParam("nonce") String nonce, @RequestParam("msg_signature")String msgSignature, @RequestBody String postData)throws WxErrorException{
+		log.debug("timestamp：" + timestamp);
+		log.debug("nonce：" + nonce);
+		log.debug("msgSignature：" + msgSignature);
+		log.debug("postData：" + postData);
+		String encodingAesKey = "ndbBco26cAH3rBvDfFP0JmdCdxJ2AdqWbmQKr3gtwTB";
+		String token = "0c5cc9cebcc54c4ea1b2a7e1a00db569";
+		String appId = "wx4d553967d6422132";
+
+		String postDataXML = postData.replaceAll("AppId","ToUserName");
+
+		try {
+			WXBizMsgCrypt pc = new WXBizMsgCrypt(token, encodingAesKey, appId);
+			String data = pc.decryptMsg(msgSignature, timestamp, nonce, postDataXML);
+			log.debug("输出日志：" + data);
+		} catch (AesException e) {
+			e.printStackTrace();
+			return "fail";
+		}
+		log.debug("success");
+		return "success";
 	}
 }
