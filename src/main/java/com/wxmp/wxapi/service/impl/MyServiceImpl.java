@@ -26,6 +26,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import com.wxmp.core.exception.WxErrorException;
+import com.wxmp.wxapi.process.*;
 import com.wxmp.wxcms.domain.*;
 import com.wxmp.wxcms.mapper.*;
 import org.apache.commons.collections.CollectionUtils;
@@ -36,14 +37,6 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.wxmp.core.util.wx.WxUtil;
-import com.wxmp.wxapi.process.HttpMethod;
-import com.wxmp.wxapi.process.MpAccount;
-import com.wxmp.wxapi.process.MsgType;
-import com.wxmp.wxapi.process.MsgXmlUtil;
-import com.wxmp.wxapi.process.WxApi;
-import com.wxmp.wxapi.process.WxApiClient;
-import com.wxmp.wxapi.process.WxMemoryCacheClient;
-import com.wxmp.wxapi.process.WxMessageBuilder;
 import com.wxmp.wxapi.service.MyService;
 import com.wxmp.wxapi.vo.Matchrule;
 import com.wxmp.wxapi.vo.MsgRequest;
@@ -331,5 +324,22 @@ public class MyServiceImpl implements MyService {
             return true;
         }
         return true;
+    }
+
+    @Override
+    public String buildComponent_access_token(String appId, String ticket) throws WxErrorException {
+        String component_appid = "wx4d553967d6422132";
+        String component_appsecret = "f0a6b4545311382164e96733e0f885ed";
+        logger.info("ticket:"+ticket);
+        String component_verify_ticket = ticket;
+        String component_access_token = WxOpenApi.getcomponent_access_token(appId,component_appsecret,component_verify_ticket);
+        logger.info("component_access_token:"+component_access_token);
+
+
+
+
+
+
+        return component_access_token;
     }
 }

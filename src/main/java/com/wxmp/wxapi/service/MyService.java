@@ -49,4 +49,7 @@ public interface MyService {
 
 	//同步服务器的用户标签
 	public boolean syncUserTagList(MpAccount mpAccount)throws WxErrorException ;
+
+	//第三方Component_access_token
+	public String buildComponent_access_token(String appId,String ticket)throws WxErrorException ;
 }

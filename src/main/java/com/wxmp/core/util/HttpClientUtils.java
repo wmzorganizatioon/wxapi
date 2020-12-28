@@ -252,6 +252,7 @@ public class HttpClientUtils {
         return httpPost;
     }
 
+
     /**
      * 发送 post请求（带文件）
      *
@@ -388,6 +389,57 @@ public class HttpClientUtils {
         CloseableHttpResponse response = null;
         HttpEntity entity = null;
         String responseContent = null;
+        try {
+            // 执行请求
+            response = httpClient.execute(httpPost);
+            entity = response.getEntity();
+            responseContent = EntityUtils.toString(entity, "UTF-8");
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        } finally {
+
+            try {
+                // 关闭连接,释放资源
+                if (entity != null) {
+                    EntityUtils.consumeQuietly(entity); // 会自动释放连接
+                }
+                if (response != null) {
+                    response.close();
+                }
+
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            }
+
+        }
+        return responseContent;
+    }
+    /**
+     * 发送Post请求
+     *
+     * @param maps
+     * @param httpUrl
+     *            ssl证书信息
+     * @return
+     */
+    public static String sendHttpPostJson(String httpUrl, Map<String, String> maps) {
+        HttpPost httpPost = new HttpPost(httpUrl);// 创建httpPost
+        // 创建参数队列
+        List<NameValuePair> nameValuePairs = new ArrayList<>();
+        for (Map.Entry<String, String> m : maps.entrySet()) {
+            nameValuePairs.add(new BasicNameValuePair(m.getKey(), m.getValue()));
+        }
+        try {
+            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        CloseableHttpClient httpClient = getHttpClient(null);
+        CloseableHttpResponse response = null;
+        HttpEntity entity = null;
+        String responseContent = null;
+        httpPost.setHeader("Content-Type","application/json");
+        httpPost.setHeader("charset","UTF-8");
         try {
             // 执行请求
             response = httpClient.execute(httpPost);

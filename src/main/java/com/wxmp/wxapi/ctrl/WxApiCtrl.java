@@ -72,6 +72,7 @@ public class WxApiCtrl extends BaseCtrl{
 	private MsgTextService msgTextService;
 	@Resource
 	private MsgNewsService msgNewsService;
+
 	
 	/**
 	 * GET请求：进行URL、Tocken 认证；
@@ -749,5 +750,14 @@ public class WxApiCtrl extends BaseCtrl{
 		}
 		log.debug("success");
 		return "success";
+	}
+	@PostMapping(value = "/getcomponent_access_token")
+	@ResponseBody
+	public String getcomponent_access_token(@RequestBody JSONObject jsonObject)throws WxErrorException{
+		String ticket = jsonObject.getString("ticket");
+		String appId = jsonObject.getString("appId");
+
+		String component_access_token = myService.buildComponent_access_token(appId,ticket);
+		return component_access_token;
 	}
 }
