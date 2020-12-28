@@ -7,10 +7,15 @@ import com.alibaba.fastjson.JSONObject;
 import com.wxmp.core.exception.WxErrorException;
 import com.wxmp.core.util.HttpClientUtils;
 import com.wxmp.core.util.HttpConnectionUtil;
+import com.wxmp.wxapi.service.ComponentService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 
 public class WxOpenApi {
+
+    @Autowired
+    ComponentService componentService;
     /**
      * 微信 API、微信开放平台接口
      *
@@ -20,7 +25,7 @@ public class WxOpenApi {
 
 
     // 获取OAuth2.0 Token
-    public static String getcomponent_access_token(String component_appid, String component_appsecret, String component_verify_ticket) throws WxErrorException {
+    public String getcomponent_access_token(String component_appid, String component_appsecret, String component_verify_ticket) throws WxErrorException {
         OAuthAccessToken token = null;
         String tockenUrl = GET_component_access_token;
         JSONObject jsonObject = new JSONObject();
@@ -46,6 +51,7 @@ public class WxOpenApi {
         if(errorcode!=null){
             return errorcode;
         }
+        componentService.getPreAuthCode(component_access_token, component_appid);
         return component_access_token;
     }
 }

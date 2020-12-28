@@ -332,7 +332,7 @@ public class MyServiceImpl implements MyService {
         String component_appsecret = "f0a6b4545311382164e96733e0f885ed";
         logger.info("ticket:"+ticket);
         String component_verify_ticket = ticket;
-        String component_access_token = WxOpenApi.getcomponent_access_token(appId,component_appsecret,component_verify_ticket);
+        String component_access_token = new WxOpenApi().getcomponent_access_token(component_appid,component_appsecret,component_verify_ticket);
         logger.info("component_access_token:"+component_access_token);
 
 

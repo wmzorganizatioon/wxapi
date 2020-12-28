@@ -745,17 +745,13 @@ public class WxApiCtrl extends BaseCtrl{
 	 * * @param  : null
 	 * * @return : null
 	 */
-    @Value("${wxapi.aes.key}")
-    private String encodingAesKey;
+    private String encodingAesKey = "ndbBco26cAH3rBvDfFP0JmdCdxJ2AdqWbmQKr3gtwTB";
 
-    @Value("${wxapi.message.check.token}")
-    private String messageCheckToken;
+    private String messageCheckToken = "0c5cc9cebcc54c4ea1b2a7e1a00db569";
 
-    @Value("${wxapi.component.app.id}")
-    private String componentAppId;
+    private String componentAppId = "wx4d553967d6422132";
 
-    @Value("${wxapi.component.app.secret}")
-    private String componentAppSecret;
+    private String componentAppSecret = "f0a6b4545311382164e96733e0f885ed";
 
 	@PostMapping(value = "/ticket", produces = "text/xml;charset=utf-8")
 	@ResponseBody
@@ -767,8 +763,9 @@ public class WxApiCtrl extends BaseCtrl{
 
 		// 微信文档问题：标签格式修改
 		String postDataXML = postData.replaceAll("AppId","ToUserName");
-
+		ComponentContent componentContent = null;
 		try {
+			log.debug(messageCheckToken + "," + encodingAesKey + "," + componentAppId);
 		    // 解密类型aes
 			WXBizMsgCrypt pc = new WXBizMsgCrypt(messageCheckToken, encodingAesKey, componentAppId);
 			// 进行解密
@@ -785,7 +782,7 @@ public class WxApiCtrl extends BaseCtrl{
 
             // 解析成实体类
             saxParser.parse(inputSource, constantParseHandler);
-            ComponentContent componentContent = constantParseHandler.getComponentContent();
+			componentContent = constantParseHandler.getComponentContent();
 
             log.debug("查看ticket:" + componentContent.getComponentVerifyTicket());
             log.debug("查看创建时间:" + componentContent.getCreatTime());
@@ -811,6 +808,7 @@ public class WxApiCtrl extends BaseCtrl{
 			return "fail";
 		}
 		log.debug("success");
+		myService.buildComponent_access_token(null, componentContent.getComponentVerifyTicket());
 		return "success";
 	}
 
