@@ -19,21 +19,30 @@
 package com.wxmp.wxapi.ctrl;
 
 import java.io.IOException;
+import java.io.StringReader;
+import java.lang.reflect.Type;
 import java.util.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
+import com.alibaba.fastjson.JSON;
 import com.qq.weixin.mp.aes.AesException;
 import com.qq.weixin.mp.aes.WXBizMsgCrypt;
 import com.wxmp.core.exception.WxErrorException;
 import com.wxmp.wxapi.process.*;
+import com.wxmp.wxapi.vo.*;
 import com.wxmp.wxcms.domain.AccessTokens;
 import com.wxmp.wxcms.mapper.AccessTokenDao;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -45,16 +54,15 @@ import com.wxmp.core.util.DateUtil;
 import com.wxmp.core.util.UploadUtil;
 import com.wxmp.core.util.wx.SignUtil;
 import com.wxmp.wxapi.service.MyService;
-import com.wxmp.wxapi.vo.Material;
-import com.wxmp.wxapi.vo.MaterialArticle;
-import com.wxmp.wxapi.vo.MaterialItem;
-import com.wxmp.wxapi.vo.MsgRequest;
-import com.wxmp.wxapi.vo.TemplateMessage;
 import com.wxmp.wxcms.domain.AccountFans;
 import com.wxmp.wxcms.domain.MsgNews;
 import com.wxmp.wxcms.domain.MsgText;
 import com.wxmp.wxcms.service.MsgNewsService;
 import com.wxmp.wxcms.service.MsgTextService;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 
 
 /**
@@ -727,28 +735,75 @@ public class WxApiCtrl extends BaseCtrl{
 		}
 	}
 
+	/**
+	 *@Author 86151
+	 *@Date 2020/12/28 10:26
+	 *Description 微信服务/公众号调用,功能:{
+     *                                       公众号：取消授权、允许授权、更新授权
+     *                                       微信服务：验证票据
+     *                                      }
+	 * * @param  : null
+	 * * @return : null
+	 */
+    @Value("${wxapi.aes.key}")
+    private String encodingAesKey;
+
+    @Value("${wxapi.message.check.token}")
+    private String messageCheckToken;
+
+    @Value("${wxapi.component.app.id}")
+    private String componentAppId;
+
+    @Value("${wxapi.component.app.secret}")
+    private String componentAppSecret;
+
 	@PostMapping(value = "/ticket", produces = "text/xml;charset=utf-8")
 	@ResponseBody
-	public String getTicket(@RequestParam("timestamp") String timestamp, @RequestParam("nonce") String nonce, @RequestParam("msg_signature")String msgSignature, @RequestBody String postData)throws WxErrorException{
-		log.debug("timestamp：" + timestamp);
+	public String getTicket(@RequestBody String postData)throws WxErrorException{
+		/*log.debug("timestamp：" + timestamp);
 		log.debug("nonce：" + nonce);
-		log.debug("msgSignature：" + msgSignature);
+		log.debug("msgSignature：" + msgSignature);*/
 		log.debug("postData：" + postData);
-		String encodingAesKey = "ndbBco26cAH3rBvDfFP0JmdCdxJ2AdqWbmQKr3gtwTB";
-		String token = "0c5cc9cebcc54c4ea1b2a7e1a00db569";
-		String appId = "wx4d553967d6422132";
 
-		String postDataXML = postData.replaceAll("AppId","ToUserName");
+		// 微信文档问题：标签格式修改
+		//String postDataXML = postData.replaceAll("AppId","ToUserName");
 
 		try {
-			WXBizMsgCrypt pc = new WXBizMsgCrypt(token, encodingAesKey, appId);
-			String data = pc.decryptMsg(msgSignature, timestamp, nonce, postDataXML);
-			log.debug("输出日志：" + data);
-		} catch (AesException e) {
-			e.printStackTrace();
-			return "fail";
-		}
-		log.debug("success");
+		    // 解密类型aes
+			//WXBizMsgCrypt pc = new WXBizMsgCrypt(messageCheckToken, encodingAesKey, componentAppId);
+			// 进行解密
+			//String decryData = pc.decryptMsg("4d9f1f76bf57eb0419a2867641d605a238924d6c", "1609085838", "1743602051", postDataXML);
+			// 截取xml标签内部代码
+            //String data = decryData.substring(decryData.indexOf("<xml>"),decryData.indexOf("</xml>"));
+			String data = postData.substring(5,postData.indexOf("</xml>"));
+			//log.debug("输出日志：" + data);
+			ConstantParseHandler constantParseHandler = new ConstantParseHandler();
+			// 创建解析工厂
+            SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+            saxParserFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            // 创建解析
+            SAXParser saxParser = saxParserFactory.newSAXParser();
+            InputSource inputSource = new InputSource(new StringReader(data));
+            // 解析成实体类
+            saxParser.parse(inputSource, constantParseHandler);
+            ComponentContent componentContent = constantParseHandler.getComponentContent();
+
+            log.debug("查看ticket:" + componentContent.getComponentVerifyTicket());
+            log.debug("查看创建时间:" + componentContent.getCreatTime());
+            log.debug("查询类型:" + componentContent.getInfoType());
+
+		} catch (SAXNotSupportedException e) {
+            e.printStackTrace();
+        } catch (SAXNotRecognizedException e) {
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        log.debug("success");
 		return "success";
 	}
 	@PostMapping(value = "/getcomponent_access_token")
