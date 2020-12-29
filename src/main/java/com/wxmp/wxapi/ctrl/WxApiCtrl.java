@@ -36,12 +36,14 @@ import com.qq.weixin.mp.aes.AesException;
 import com.qq.weixin.mp.aes.WXBizMsgCrypt;
 import com.wxmp.core.exception.WxErrorException;
 import com.wxmp.wxapi.process.*;
+import com.wxmp.wxapi.service.ComponentService;
 import com.wxmp.wxapi.vo.*;
 import com.wxmp.wxcms.domain.AccessTokens;
 import com.wxmp.wxcms.mapper.AccessTokenDao;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -80,6 +82,9 @@ public class WxApiCtrl extends BaseCtrl{
 	private MsgTextService msgTextService;
 	@Resource
 	private MsgNewsService msgNewsService;
+
+	@Autowired
+	ComponentService componentService;
 
 	
 	/**
@@ -808,7 +813,7 @@ public class WxApiCtrl extends BaseCtrl{
 			return "fail";
 		}
 		log.debug("success");
-		myService.buildComponent_access_token(null, componentContent.getComponentVerifyTicket());
+		//myService.buildComponent_access_token(null, componentContent.getComponentVerifyTicket());
 		return "success";
 	}
 
@@ -820,5 +825,14 @@ public class WxApiCtrl extends BaseCtrl{
 
 		String component_access_token = myService.buildComponent_access_token(appId,ticket);
 		return component_access_token;
+	}
+
+	@PostMapping(value = "/getPreAuthCode")
+	@ResponseBody
+	public void getPreAuthCode(@RequestBody JSONObject jsonObject){
+		String component_access_token = jsonObject.getString("component_access_token");
+		String component_appid = jsonObject.getString("component_appid");
+		String getPreAuthCode = componentService.getPreAuthCode(component_access_token, component_appid);
+		log.debug("打印出成果的预授权码：" + getPreAuthCode);
 	}
 }
