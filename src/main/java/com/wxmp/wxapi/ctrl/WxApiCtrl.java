@@ -817,6 +817,13 @@ public class WxApiCtrl extends BaseCtrl{
 		return "success";
 	}
 
+	/**
+	 *@Author 86151
+	 *@Date 2020/12/29 10:27
+	 *Description 获取第三方令牌
+	 * * @param  : jsonObject
+	 * * @return : java.lang.String
+	 */
 	@PostMapping(value = "/getcomponent_access_token")
 	@ResponseBody
 	public String getcomponent_access_token(@RequestBody JSONObject jsonObject)throws WxErrorException{
@@ -827,20 +834,61 @@ public class WxApiCtrl extends BaseCtrl{
 		return component_access_token;
 	}
 
+	/**
+	 *@Author 86151
+	 *@Date 2020/12/29 10:27
+	 *Description 获取预授权码
+	 * * @param  : jsonObject
+	 * * @return : void
+	 */
 	@PostMapping(value = "/getPreAuthCode")
 	@ResponseBody
 	public void getPreAuthCode(@RequestBody JSONObject jsonObject){
 		String component_access_token = jsonObject.getString("component_access_token");
 		String component_appid = jsonObject.getString("component_appid");
-		String getPreAuthCode = componentService.getPreAuthCode(component_access_token, component_appid);
+		String getPreAuthCode = null;
+		try {
+			getPreAuthCode = componentService.getPreAuthCode(component_access_token, component_appid);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		log.debug("打印出成果的预授权码：" + getPreAuthCode);
 	}
+
+	/**
+	 *@Author 86151
+	 *@Date 2020/12/29 15:20
+	 *Description 刷新令牌
+	 * * @param  : jsonObject
+	 * * @return : boolean
+	 */
 	@PostMapping(value = "/refreshtoken")
 	@ResponseBody
-	public boolean refreshtoken(@RequestBody JSONObject jsonObject){
+	public boolean refreshtoken(@RequestBody JSONObject jsonObject) {
 		String component_access_token = jsonObject.getString("component_access_token");
 		String authorizer_appid = jsonObject.getString("authorizer_appid");
 		boolean result = componentService.refreshtoken(component_access_token, authorizer_appid);
 		return result;
+	}
+
+	/**
+	 *@Author 86151
+	 *@Date 2020/12/29 15:20
+	 *Description 获取授权方的信息
+	 * * @param  : jsonObject
+	 * * @return : java.lang.String
+	 */
+	@PostMapping(value = "/getAuthInfo")
+	@ResponseBody
+	public String getAuthInfo(@RequestBody JSONObject jsonObject){
+		String component_access_token = jsonObject.getString("component_access_token");
+		String component_appid = jsonObject.getString("component_appid");
+		String authorization_code = jsonObject.getString("authorization_code");
+		try {
+			componentService.selectAuthInfo(component_access_token, component_appid, authorization_code);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

@@ -6,16 +6,22 @@ import com.wxmp.core.util.HttpConnectionUtil;
 import com.wxmp.wxapi.process.WxApi;
 import com.wxmp.wxapi.process.WxOpenApi;
 import com.wxmp.wxapi.service.ComponentService;
+import com.wxmp.wxcms.domain.Authorizer;
+import com.wxmp.wxcms.mapper.ComponentDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 
 @Service
 public class ComponentServiceImpl implements ComponentService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ComponentServiceImpl.class);
+
+    @Resource
+    private ComponentDao componentDao;
 
     /**
      *@Author 86151
@@ -25,21 +31,16 @@ public class ComponentServiceImpl implements ComponentService {
      * * @return : java.lang.String
      */
     @Override
-    public String getPreAuthCode(String component_access_token, String component_appid) {
+    public String getPreAuthCode(String component_access_token, String component_appid) throws Exception{
         String uri = String.format(WxApi.COMPONENT_ACCESS_TOKEN, component_access_token);
-//        String pre_auth_code = String.valueOf(WxApi.httpsRequest(uri, HttpMethod.POST, component_appid).get("pre_auth_code"));
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("component_appid",component_appid);
 
         HashMap header = new HashMap();
         header.put("Content-Type","application/json");
         String result = null;
-        try {
-            // result = HttpClientUtils.sendHttpPostJson(tockenUrl,map);
-              result = HttpConnectionUtil.post(uri,header,jsonObject.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        result = HttpConnectionUtil.post(uri,header,jsonObject.toString());
+
         JSONObject json  = new JSONObject();
         if(result!=null){
             json = JSONObject.parseObject(result);
@@ -68,11 +69,57 @@ public class ComponentServiceImpl implements ComponentService {
         String authorizer_refresh_token = "";
         if (component_access_token == null) {
             //获取component_access_token
-        }else{
+        } else {
             //通过authorizer_appid获取authorizer_refresh_token
 
         }
-        boolean result = new WxOpenApi().refreshtoken(component_access_token,component_appid,authorizer_appid,authorizer_refresh_token);
+        boolean result = new WxOpenApi().refreshtoken(component_access_token, component_appid, authorizer_appid, authorizer_refresh_token);
         return result;
+    }
+    @Override
+    public String selectAuthInfo(String component_access_token, String component_appid, String authorization_code) {
+        String uri = String.format(WxApi.QUERY_COMPONENT_INFO, component_access_token);
+
+        JSONObject jsonObject = new JSONObject();
+        JSONObject json  = new JSONObject();
+
+        jsonObject.put("component_appid",component_appid);
+        jsonObject.put("authorization_code",authorization_code);
+
+        HashMap header = new HashMap();
+
+        header.put("Content-Type","application/json");
+        String result = null;
+
+        result = HttpConnectionUtil.post(uri,header,jsonObject.toString());
+
+        if(result!=null){
+            json = JSONObject.parseObject(result);
+        }
+        if(json.getString("errcode")!=null){
+            throw new NullPointerException("errcode：" + json.getString("errcode"));
+        }else {
+            String authorizer_appid = json.getJSONObject("authorization_info").getString("authorizer_appid");
+            String authorizer_access_token = json.getJSONObject("authorization_info").getString("authorizer_access_token");
+            String authorizer_refresh_token = json.getJSONObject("authorization_info").getString("authorizer_refresh_token");
+            long start = System.currentTimeMillis();
+            String time = String.valueOf(start / 1000);
+
+            Authorizer authorizer = componentDao.queryAuthInfo(authorizer_appid);
+
+            if (authorizer == null) {
+                Authorizer authorizer1 = new Authorizer(authorizer_appid, authorizer_access_token, authorizer_refresh_token, time);
+                componentDao.addAuthInfo(authorizer1);
+                return "success";
+            }
+            long end = Long.parseLong(authorizer.getCreateTime());
+            if ((Long.parseLong(time) - end) >= 7200) {
+                Authorizer authorizer1 = new Authorizer(authorizer_appid, authorizer_access_token, authorizer_refresh_token, time);
+                authorizer1.setId(authorizer.getId());
+                componentDao.updateAuthInfo(authorizer1);
+                return "success";
+            }
+        }
+        return null;
     }
 }

@@ -62,7 +62,11 @@ public class WxOpenApi {
         }else{
             component_access_token = json.getString("component_access_token");
         }
-        componentService.getPreAuthCode(component_access_token, component_appid);
+        try {
+            componentService.getPreAuthCode(component_access_token, component_appid);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return component_access_token;
     }
 

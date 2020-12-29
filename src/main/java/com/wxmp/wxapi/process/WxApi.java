@@ -59,6 +59,8 @@ import com.wxmp.core.util.MyTrustManager;
 
 public class WxApi {
 
+    public static final String QUERY_COMPONENT_INFO = "https://api.weixin.qq.com/cgi-bin/component/api_query_auth?component_access_token=%s";
+
     public static final String COMPONENT_ACCESS_TOKEN = "https://api.weixin.qq.com/cgi-bin/component/api_create_preauthcode?component_access_token=%s";
 
     // token 接口

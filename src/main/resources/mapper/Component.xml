@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.wxmp.wxcms.mapper.ComponentDao">
+    <select id="queryAuthInfo" parameterType="java.lang.String" resultType="com.wxmp.wxcms.domain.Authorizer">
+		SELECT * FROM sys_authorizer where authorizer_appid = #{authorizerAppId}
+	</select>
+
+    <insert id="addAuthInfo" parameterType="com.wxmp.wxcms.domain.Authorizer" flushCache="true">
+        insert INTO sys_authorizer (authorizer_appid, authorizer_access_token, authorizer_refresh_token, create_time) values (#{authorizerAppId}, #{authorizerAccessToken}, #{authorizerRefershToken}, #{createTime})
+    </insert>
+
+    <update id="updateAuthInfo" parameterType="com.wxmp.wxcms.domain.Authorizer" flushCache="true">
+        update sys_authorizer set authorizer_appid=#{authorizerAppId},authorizer_access_token=#{authorizerAccessToken},authorizer_refresh_token=#{authorizerRefershToken},create_time=#{createTime} where id=#{id}
+    </update>
+</mapper>

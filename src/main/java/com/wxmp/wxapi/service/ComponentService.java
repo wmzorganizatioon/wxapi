@@ -17,10 +17,12 @@ public interface ComponentService {
      * * @param  : component_access_token * @param  : component_appid
      * * @return : java.lang.String
      */
-    String getPreAuthCode(String component_access_token, String component_appid);
-
     //第三方Component_access_token
     public String buildComponent_access_token(String appId,String ticket)throws WxErrorException;
 
     boolean refreshtoken(String component_access_token, String authorizer_appid);
+
+    String getPreAuthCode(String component_access_token, String component_appid) throws Exception;
+
+    String selectAuthInfo(String component_access_token, String component_appid, String authorization_code);
 }
