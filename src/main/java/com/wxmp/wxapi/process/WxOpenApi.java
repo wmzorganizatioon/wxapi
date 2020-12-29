@@ -8,6 +8,7 @@ import com.wxmp.core.exception.WxErrorException;
 import com.wxmp.core.util.HttpConnectionUtil;
 import com.wxmp.wxapi.service.ComponentService;
 import com.wxmp.wxapi.service.impl.ComponentServiceImpl;
+import com.wxmp.wxcms.domain.Authorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +71,7 @@ public class WxOpenApi {
         return component_access_token;
     }
 
-    public boolean refreshtoken(String component_access_token, String component_appid, String authorizer_appid, String authorizer_refresh_token) {
+    public Authorizer refreshtoken(String component_access_token, String component_appid, String authorizer_appid, String authorizer_refresh_token) {
         boolean res;
         String refreshtokenurl = WxOpenApi.getAuthorizer_refresh_tokenUrl(component_access_token);
         JSONObject jsonObject = new JSONObject();
@@ -95,15 +96,19 @@ public class WxOpenApi {
         String errorcode = json.getString("errcode");
         if(errorcode!=null){
             LOGGER.info("更新authorizer_access_token时errcode:"+errorcode);
-            res = false;
+            return null;
         }else{
             newauthorizer_access_token = json.getString("authorizer_access_token");
             newauthorizer_refresh_token = json.getString("authorizer_refresh_token");
             //入库
             res = true;
         }
+        Authorizer authorizer = new Authorizer();
+        authorizer.setAuthorizerAccessToken(newauthorizer_access_token);
+        authorizer.setAuthorizerRefershToken(newauthorizer_refresh_token);
 
 
-        return res;
+
+        return authorizer;
     }
 }

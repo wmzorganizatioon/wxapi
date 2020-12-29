@@ -66,15 +66,29 @@ public class ComponentServiceImpl implements ComponentService {
     @Override
     public boolean refreshtoken(String component_access_token, String authorizer_appid) {
         String component_appid = "wx4d553967d6422132";
+        Authorizer authorizer = componentDao.queryAuthInfo(authorizer_appid);
         String authorizer_refresh_token = "";
+        if(authorizer!=null){
+            authorizer_refresh_token = authorizer.getAuthorizerRefershToken();
+        }
         if (component_access_token == null) {
             //获取component_access_token
         } else {
             //通过authorizer_appid获取authorizer_refresh_token
 
         }
-        boolean result = new WxOpenApi().refreshtoken(component_access_token, component_appid, authorizer_appid, authorizer_refresh_token);
-        return result;
+        Authorizer newauthorizer1 = new WxOpenApi().refreshtoken(component_access_token, component_appid, authorizer_appid, authorizer_refresh_token);
+        if(newauthorizer1!=null){
+            authorizer.setAuthorizerRefershToken(newauthorizer1.getAuthorizerRefershToken());
+            authorizer.setAuthorizerAccessToken(newauthorizer1.getAuthorizerAccessToken());
+            componentDao.updateAuthInfo(authorizer);
+            return true;
+        }else {
+            return false;
+        }
+
+
+
     }
     @Override
     public String selectAuthInfo(String component_access_token, String component_appid, String authorization_code) {
