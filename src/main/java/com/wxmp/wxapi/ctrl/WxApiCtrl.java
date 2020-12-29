@@ -823,7 +823,7 @@ public class WxApiCtrl extends BaseCtrl{
 		String ticket = jsonObject.getString("ticket");
 		String appId = jsonObject.getString("appId");
 
-		String component_access_token = myService.buildComponent_access_token(appId,ticket);
+		String component_access_token = componentService.buildComponent_access_token(appId,ticket);
 		return component_access_token;
 	}
 
@@ -834,5 +834,13 @@ public class WxApiCtrl extends BaseCtrl{
 		String component_appid = jsonObject.getString("component_appid");
 		String getPreAuthCode = componentService.getPreAuthCode(component_access_token, component_appid);
 		log.debug("打印出成果的预授权码：" + getPreAuthCode);
+	}
+	@PostMapping(value = "/refreshtoken")
+	@ResponseBody
+	public boolean refreshtoken(@RequestBody JSONObject jsonObject){
+		String component_access_token = jsonObject.getString("component_access_token");
+		String authorizer_appid = jsonObject.getString("authorizer_appid");
+		boolean result = componentService.refreshtoken(component_access_token, authorizer_appid);
+		return result;
 	}
 }

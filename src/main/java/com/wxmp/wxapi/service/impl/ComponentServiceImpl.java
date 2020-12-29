@@ -1,10 +1,10 @@
 package com.wxmp.wxapi.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.wxmp.core.exception.WxErrorException;
 import com.wxmp.core.util.HttpConnectionUtil;
-import com.wxmp.wxapi.process.HttpMethod;
 import com.wxmp.wxapi.process.WxApi;
+import com.wxmp.wxapi.process.WxOpenApi;
 import com.wxmp.wxapi.service.ComponentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,5 +50,29 @@ public class ComponentServiceImpl implements ComponentService {
             LOGGER.debug("获取预授权码：" + json.getString("pre_auth_code"));
         }
         return json.getString("pre_auth_code");
+    }
+    @Override
+    public String buildComponent_access_token(String appId, String ticket) throws WxErrorException {
+        String component_appid = "wx4d553967d6422132";
+        String component_appsecret = "f0a6b4545311382164e96733e0f885ed";
+        LOGGER.info("ticket:"+ticket);
+        String component_verify_ticket = ticket;
+        String component_access_token = new WxOpenApi().getcomponent_access_token(component_appid,component_appsecret,component_verify_ticket);
+        LOGGER.info("component_access_token:"+component_access_token);
+        return component_access_token;
+    }
+
+    @Override
+    public boolean refreshtoken(String component_access_token, String authorizer_appid) {
+        String component_appid = "wx4d553967d6422132";
+        String authorizer_refresh_token = "";
+        if (component_access_token == null) {
+            //获取component_access_token
+        }else{
+            //通过authorizer_appid获取authorizer_refresh_token
+
+        }
+        boolean result = new WxOpenApi().refreshtoken(component_access_token,component_appid,authorizer_appid,authorizer_refresh_token);
+        return result;
     }
 }

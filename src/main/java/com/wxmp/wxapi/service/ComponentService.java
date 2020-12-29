@@ -1,5 +1,7 @@
 package com.wxmp.wxapi.service;
 
+import com.wxmp.core.exception.WxErrorException;
+
 /**
  *@Author Wisdom
  *@date 2020/12/28 16:07
@@ -16,4 +18,9 @@ public interface ComponentService {
      * * @return : java.lang.String
      */
     String getPreAuthCode(String component_access_token, String component_appid);
+
+    //第三方Component_access_token
+    public String buildComponent_access_token(String appId,String ticket)throws WxErrorException;
+
+    boolean refreshtoken(String component_access_token, String authorizer_appid);
 }
