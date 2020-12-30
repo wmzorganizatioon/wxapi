@@ -1,6 +1,8 @@
 package com.wxmp.wxapi.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.wxmp.core.exception.WxErrorException;
+import com.wxmp.wxapi.vo.TemplateMessage;
 
 /**
  *@Author Wisdom
@@ -25,4 +27,7 @@ public interface ComponentService {
     String getPreAuthCode(String component_access_token, String component_appid) throws Exception;
 
     String selectAuthInfo(String component_access_token, String component_appid, String authorization_code);
+
+
+    boolean sendTemplateMessage(TemplateMessage tplMsg, String authorizer_appid);
 }

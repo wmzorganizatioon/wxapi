@@ -6,6 +6,7 @@ import com.wxmp.core.util.HttpConnectionUtil;
 import com.wxmp.wxapi.process.WxApi;
 import com.wxmp.wxapi.process.WxOpenApi;
 import com.wxmp.wxapi.service.ComponentService;
+import com.wxmp.wxapi.vo.TemplateMessage;
 import com.wxmp.wxcms.domain.Authorizer;
 import com.wxmp.wxcms.mapper.ComponentDao;
 import org.slf4j.Logger;
@@ -135,5 +136,21 @@ public class ComponentServiceImpl implements ComponentService {
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean sendTemplateMessage(TemplateMessage tplMsg, String authorizer_appid) {
+        Authorizer authorizer = componentDao.queryAuthInfo(authorizer_appid);
+        String authorizerAccessToken = "";
+        if(authorizer!=null){
+            authorizerAccessToken = authorizer.getAuthorizerAccessToken();
+        }else{
+            LOGGER.info("authorizer_appid:"+authorizer_appid+"查询不到authorizerAccessToken");
+            return false;
+        }
+        boolean result = new WxOpenApi().sendTemplateMessage(tplMsg,authorizerAccessToken);
+
+        return result;
+
     }
 }

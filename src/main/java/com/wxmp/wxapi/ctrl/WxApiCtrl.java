@@ -190,19 +190,7 @@ public class WxApiCtrl extends BaseCtrl{
 		return mv;
 	}
 	
-	//获取用户列表
-	@RequestMapping(value = "/syncAccountFansList")
-	@ResponseBody
-	public AjaxResult syncAccountFansList() throws WxErrorException {
-		MpAccount mpAccount = WxMemoryCacheClient.getMpAccount();//获取缓存中的唯一账号
-		if(mpAccount != null){
-			boolean flag = myService.syncAccountFansList(mpAccount);
-			if(flag){
-				return AjaxResult.success();
-			}
-		}
-		return AjaxResult.failure();
-	}
+
 
 	/**
 	 * 同步用户标签列表
@@ -369,37 +357,6 @@ public class WxApiCtrl extends BaseCtrl{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	/**
-	 * 发送模板消息
-	 * @return
-	 */
-	@RequestMapping(value = "/sendTemplateMessage", method = RequestMethod.POST)
-	@ResponseBody
-	public AjaxResult sendTemplateMessage(String openIds) throws WxErrorException  {
-		MpAccount mpAccount = WxMemoryCacheClient.getMpAccount();//获取缓存中的唯一账号
-		TemplateMessage tplMsg = new TemplateMessage();
-
-		String[] openIdArray = StringUtils.split(openIds, ",");
-		for (String openId : openIdArray) {
-			tplMsg.setOpenid(openId);
-			//微信公众号号的template id，开发者自行处理参数
-			tplMsg.setTemplateId("azx4q5sQjWUk1O3QY0MJSJkwePQmjR-T5rCyjyMUw8U");
-
-			tplMsg.setUrl("https://www.smartwx.info");
-			Map<String, String> dataMap = new HashMap<String, String>();
-			dataMap.put("first", "smartadmin管理后台已经上线，欢迎吐槽");
-			dataMap.put("keyword1", "时间：" + DateUtil.changeDateTOStr(new Date()));
-			dataMap.put("keyword2", "码云平台地址：https://gitee.com/qingfengtaizi/wxmp");
-			dataMap.put("keyword3", "github平台地址：https://github.com/qingfengtaizi/wxmp-web");
-			dataMap.put("remark", "我们期待您的加入");
-			tplMsg.setDataMap(dataMap);
-
-			JSONObject result = WxApiClient.sendTemplateMessage(tplMsg, mpAccount);
-		}
-
-		return AjaxResult.success();
 	}
 	
 	/**
@@ -890,5 +847,50 @@ public class WxApiCtrl extends BaseCtrl{
 			e.printStackTrace();
 		}
 		return null;
+	}
+	/**
+	 * 发送模板消息
+	 * @return
+	 */
+	@RequestMapping(value = "/sendTemplateMessage", method = RequestMethod.POST)
+	@ResponseBody
+	public boolean sendTemplateMessage(@RequestBody JSONObject jsonObject) throws WxErrorException  {
+
+		TemplateMessage tplMsg = new TemplateMessage();
+		//公众号id
+		String authorizer_appid = jsonObject.getString("authorizer_appid");
+		//接收人openid
+		String touser = jsonObject.getString("touser");
+		//模板id
+		String template_id = jsonObject.getString("template_id");
+
+		//模板id
+		String url = jsonObject.getString("url");
+
+		HashMap data = (HashMap) jsonObject.get("data");
+
+
+		tplMsg.setOpenid(touser);
+		tplMsg.setTemplateId(template_id);
+		tplMsg.setUrl(url);
+		tplMsg.setData(data);
+
+
+//		for (String openId : openIdArray) {
+//			tplMsg.setOpenid(openId);
+//			//微信公众号号的template id，开发者自行处理参数
+//			tplMsg.setTemplateId("azx4q5sQjWUk1O3QY0MJSJkwePQmjR-T5rCyjyMUw8U");
+//
+//			tplMsg.setUrl("https://www.smartwx.info");
+//			Map<String, String> dataMap = new HashMap<String, String>();
+//			dataMap.put("first", "smartadmin管理后台已经上线，欢迎吐槽");
+//			dataMap.put("keyword1", "时间：" + DateUtil.changeDateTOStr(new Date()));
+//			dataMap.put("keyword2", "码云平台地址：https://gitee.com/qingfengtaizi/wxmp");
+//			dataMap.put("keyword3", "github平台地址：https://github.com/qingfengtaizi/wxmp-web");
+//			dataMap.put("remark", "我们期待您的加入");
+//			tplMsg.setDataMap(dataMap);
+		boolean result = componentService.sendTemplateMessage(tplMsg,authorizer_appid);
+
+		return result;
 	}
 }
