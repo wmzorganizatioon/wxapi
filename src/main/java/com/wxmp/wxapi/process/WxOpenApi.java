@@ -142,9 +142,13 @@ public class WxOpenApi {
         String errorcode = json.getString("errcode");
         if(errorcode!=null){
             LOGGER.info("发送模板时errorcode:"+errorcode);
-            return false;
+            if(errorcode.equals("0")){
+                return true;
+            }else {
+                return false;
+            }
         }else{
-            return true;
+            return false;
         }
 
 
