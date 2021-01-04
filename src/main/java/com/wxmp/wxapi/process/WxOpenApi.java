@@ -33,6 +33,7 @@ public class WxOpenApi {
     // 刷新接口调用令牌
     public static final String sendtemplate = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=%s";
 
+    public static final String GET_TEMPLATE_INFO = "https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=%s";
     // 获取token接口
     public static String getAuthorizer_refresh_tokenUrl(String component_access_token) {
         return String.format(authorizer_refresh_token,component_access_token);

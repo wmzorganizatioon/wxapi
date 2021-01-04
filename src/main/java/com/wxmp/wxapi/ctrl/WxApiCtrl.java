@@ -35,6 +35,7 @@ import com.alibaba.fastjson.JSON;
 import com.qq.weixin.mp.aes.AesException;
 import com.qq.weixin.mp.aes.WXBizMsgCrypt;
 import com.wxmp.core.exception.WxErrorException;
+import com.wxmp.core.util.HttpConnectionUtil;
 import com.wxmp.wxapi.process.*;
 import com.wxmp.wxapi.service.ComponentService;
 import com.wxmp.wxapi.vo.*;
@@ -854,7 +855,7 @@ public class WxApiCtrl extends BaseCtrl{
 	 */
 	@RequestMapping(value = "/sendTemplateMessage", method = RequestMethod.POST)
 	@ResponseBody
-	public boolean sendTemplateMessage(@RequestBody JSONObject jsonObject) throws WxErrorException  {
+	public boolean sendTemplateMessage(@RequestBody JSONObject jsonObject) throws WxErrorException {
 
 		TemplateMessage tplMsg = new TemplateMessage();
 		//公众号id
@@ -889,7 +890,29 @@ public class WxApiCtrl extends BaseCtrl{
 //			dataMap.put("keyword3", "github平台地址：https://github.com/qingfengtaizi/wxmp-web");
 //			dataMap.put("remark", "我们期待您的加入");
 //			tplMsg.setDataMap(dataMap);
-		boolean result = componentService.sendTemplateMessage(tplMsg,authorizer_appid);
+		boolean result = componentService.sendTemplateMessage(tplMsg, authorizer_appid);
+
+		return result;
+	}
+	/**
+	 *@Author 86151
+	 *@Date 2020/12/30 15:22
+	 *Description 获取模板列表信息
+	 * * @param  : jsonObject
+	 * * @return : java.lang.String
+	 */
+	@PostMapping("/getTemplateInfo")
+	@ResponseBody
+	public String getTemplateInfo(@RequestBody JSONObject jsonObject){
+		log.debug("成功进入获取模板信息");
+
+		String access_token = jsonObject.getString("access_token");
+
+		log.debug("打印access_token：" + access_token);
+
+		String result = HttpConnectionUtil.get(String.format(WxOpenApi.GET_TEMPLATE_INFO , access_token));
+
+		log.debug("打印模板信息：" + result);
 
 		return result;
 	}
