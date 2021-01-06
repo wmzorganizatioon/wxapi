@@ -838,6 +838,8 @@ public class WxApiCtrl extends BaseCtrl{
 		String component_access_token = jsonObject.getString("component_access_token");
 		String component_appid = jsonObject.getString("component_appid");
 		String authorization_code = jsonObject.getString("authorization_code");
+		String func_info = jsonObject.getString("func_info");
+		log.debug("func_info:" + func_info);
 		try {
 			componentService.selectAuthInfo(component_access_token, component_appid, authorization_code);
 		} catch (Exception e) {
@@ -957,5 +959,25 @@ public class WxApiCtrl extends BaseCtrl{
 		JSONObject result = componentService.createqrcode(authorizer_appid,action_name,expire_seconds,action_info);
 
 		return result;
+	}
+
+	/**
+	 *@Author 86151
+	 *@Date 2021/1/5 15:29
+	 *Description 进入获取消息事件接收接口
+	 * * @param  : appId * @param  : timestamp * @param  : nonce * @param  : msgSignature * @param  : postData
+	 * * @return : java.lang.String
+	 */
+	@PostMapping("/{APPID}/callback")
+	@ResponseBody
+	public String getCallBack(@PathVariable("APPID") String appId, @RequestParam("timestamp") String timestamp, @RequestParam("nonce") String nonce, @RequestParam("msg_signature")String msgSignature, @RequestBody String postData) throws AesException {
+		log.debug("成功进入获取消息事件接收接口");
+		log.debug("appId的值：" + appId);
+		log.debug("timestamp：" + timestamp);
+		log.debug("nonce：" + nonce);
+		log.debug("msgSignature：" + msgSignature);
+		log.debug("postData：" + postData);
+
+		return "success";
 	}
 }
