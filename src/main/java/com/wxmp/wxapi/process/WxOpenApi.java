@@ -34,9 +34,22 @@ public class WxOpenApi {
     public static final String sendtemplate = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=%s";
 
     public static final String GET_TEMPLATE_INFO = "https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=%s";
+    //长连接转短连接
+    public static final String longtToshorturl = "https://api.weixin.qq.com/cgi-bin/shorturl?access_token=%s";
+    //生成带参数的二维码
+    public static final String createqrcode = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=%s";
+
     // 获取token接口
     public static String getAuthorizer_refresh_tokenUrl(String component_access_token) {
         return String.format(authorizer_refresh_token,component_access_token);
+    }
+    // 生成带参数的二维码
+    public static String geCreateqrcodeUrl(String component_access_token) {
+        return String.format(createqrcode,component_access_token);
+    }
+    // 获取longtToshorturl接口
+    public static String getLongtToshorturl(String component_access_token) {
+        return String.format(longtToshorturl,component_access_token);
     }
     // 获取发送模板url
     public static String getsendtemplateUrl(String authorizerAccessToken) {
@@ -102,7 +115,7 @@ public class WxOpenApi {
         String newauthorizer_access_token = null;
         String newauthorizer_refresh_token = null;
         String errorcode = json.getString("errcode");
-        if(errorcode!=null){
+        if(errorcode!=null&&!errorcode.equals("0")){
             LOGGER.info("更新authorizer_access_token时errcode:"+errorcode);
             return null;
         }else{
@@ -152,6 +165,82 @@ public class WxOpenApi {
             return false;
         }
 
+
+    }
+
+    public String longtToshorturl(String authorizerAccessToken, String long_url) {
+        String longtToshorturl = WxOpenApi.getLongtToshorturl(authorizerAccessToken);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("action","long2short");
+        jsonObject.put("long_url",long_url);
+
+        HashMap header = new HashMap();
+        header.put("Content-Type","application/json");
+        String result = null;
+        try {
+            result = HttpConnectionUtil.post(longtToshorturl,header,jsonObject.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        JSONObject json  = new JSONObject();
+        if(result!=null){
+            json = JSONObject.parseObject(result);
+        }
+        String errorcode = json.getString("errcode");
+        String short_url = null;
+        if(errorcode!=null){
+            LOGGER.info("长连接转短连接时:"+errorcode);
+            if(errorcode.equals("0")){
+                //成功
+                short_url = json.getString("short_url");
+                return short_url;
+            }else {
+                return null;
+            }
+        }else{
+            short_url = json.getString("short_url");
+            return short_url;
+        }
+
+
+    }
+
+    public JSONObject createqrcode(String authorizerAccessToken, String action_name, String expire_seconds, HashMap action_info) {
+        String createqrcodeurl = WxOpenApi.geCreateqrcodeUrl(authorizerAccessToken);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("action_name","action_name");
+        jsonObject.put("expire_seconds",expire_seconds);
+        jsonObject.put("action_info",action_info);
+
+        HashMap header = new HashMap();
+        header.put("Content-Type","application/json");
+        String result = null;
+        try {
+            result = HttpConnectionUtil.post(createqrcodeurl,header,jsonObject.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        JSONObject json  = new JSONObject();
+        if(result!=null){
+            json = JSONObject.parseObject(result);
+        }
+        String errorcode = json.getString("errcode");
+        JSONObject reresult  = new JSONObject();
+        if(errorcode!=null){
+            LOGGER.info("生成带参数的二维码:"+errorcode);
+            return null;
+
+        }else{
+            //成功
+            String ticket = json.getString("ticket");
+            String resexpire_seconds = json.getString("expire_seconds");
+            String url = json.getString("url");
+            reresult.put("ticket",ticket);
+            reresult.put("url",url);
+            reresult.put("expire_seconds",resexpire_seconds);
+
+            return reresult;
+        }
 
     }
 }

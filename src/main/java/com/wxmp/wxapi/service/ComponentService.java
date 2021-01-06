@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.wxmp.core.exception.WxErrorException;
 import com.wxmp.wxapi.vo.TemplateMessage;
 
+import java.util.HashMap;
+
 /**
  *@Author Wisdom
  *@date 2020/12/28 16:07
@@ -30,4 +32,8 @@ public interface ComponentService {
 
 
     boolean sendTemplateMessage(TemplateMessage tplMsg, String authorizer_appid);
+
+    String longtToshorturl(String authorizer_appid, String long_url);
+
+    JSONObject createqrcode(String authorizerAppid, String action_name, String expire_seconds, HashMap action_info);
 }

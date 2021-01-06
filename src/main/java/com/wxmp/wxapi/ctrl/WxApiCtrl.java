@@ -20,7 +20,6 @@ package com.wxmp.wxapi.ctrl;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.lang.reflect.Type;
 import java.util.*;
 
 import javax.annotation.Resource;
@@ -31,7 +30,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import com.alibaba.fastjson.JSON;
 import com.qq.weixin.mp.aes.AesException;
 import com.qq.weixin.mp.aes.WXBizMsgCrypt;
 import com.wxmp.core.exception.WxErrorException;
@@ -45,7 +43,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -53,7 +50,6 @@ import org.springframework.web.servlet.ModelAndView;
 import com.alibaba.fastjson.JSONObject;
 import com.wxmp.core.common.BaseCtrl;
 import com.wxmp.core.util.AjaxResult;
-import com.wxmp.core.util.DateUtil;
 import com.wxmp.core.util.UploadUtil;
 import com.wxmp.core.util.wx.SignUtil;
 import com.wxmp.wxapi.service.MyService;
@@ -895,24 +891,70 @@ public class WxApiCtrl extends BaseCtrl{
 		return result;
 	}
 	/**
-	 *@Author 86151
-	 *@Date 2020/12/30 15:22
-	 *Description 获取模板列表信息
-	 * * @param  : jsonObject
-	 * * @return : java.lang.String
+		 *@Author 86151
+		 *@Date 2020/12/30 15:22
+		 *Description 获取模板列表信息
+		 * * @param  : jsonObject
+		 * * @return : java.lang.String
+		 */
+		@PostMapping("/getTemplateInfo")
+		@ResponseBody
+		public String getTemplateInfo(@RequestBody JSONObject jsonObject){
+			log.debug("成功进入获取模板信息");
+
+			String access_token = jsonObject.getString("access_token");
+
+			log.debug("打印access_token：" + access_token);
+
+			String result = HttpConnectionUtil.get(String.format(WxOpenApi.GET_TEMPLATE_INFO , access_token));
+
+			log.debug("打印模板信息：" + result);
+
+			return result;
+	}
+	/**
+	 * 长链接转短连接
+	 * @return
 	 */
-	@PostMapping("/getTemplateInfo")
+	@RequestMapping(value = "/longtToshorturl", method = RequestMethod.POST)
 	@ResponseBody
-	public String getTemplateInfo(@RequestBody JSONObject jsonObject){
-		log.debug("成功进入获取模板信息");
+	public String longtToshorturl(@RequestBody JSONObject jsonObject) throws WxErrorException {
 
-		String access_token = jsonObject.getString("access_token");
+		log.debug("长连接转短连接接口");
+		//公众号id
+		String authorizer_appid = jsonObject.getString("authorizer_appid");
+		//长连接
+		String long_url = jsonObject.getString("long_url");
 
-		log.debug("打印access_token：" + access_token);
+		log.debug("long_url："+long_url+"  authorizer_appid:"+authorizer_appid);
 
-		String result = HttpConnectionUtil.get(String.format(WxOpenApi.GET_TEMPLATE_INFO , access_token));
 
-		log.debug("打印模板信息：" + result);
+		String result = componentService.longtToshorturl(authorizer_appid,long_url);
+
+		return result;
+	}
+	/**
+	 * 生成带参数的二维码
+	 * @return
+	 */
+	@RequestMapping(value = "/createqrcode", method = RequestMethod.POST)
+	@ResponseBody
+	public JSONObject createqrcode(@RequestBody JSONObject jsonObject) throws WxErrorException {
+
+		log.debug("生成带参数的二维码");
+		//公众号id
+		String authorizer_appid = jsonObject.getString("authorizer_appid");
+		//二维码参数
+		HashMap action_info = (HashMap) jsonObject.get("action_info");
+		//二维码类型
+		String action_name = jsonObject.getString("action_name");
+		//二维码有效时间
+		String expire_seconds = jsonObject.getString("expire_seconds");
+
+		log.debug("action_info："+action_info.toString()+"  authorizer_appid:"+authorizer_appid);
+
+
+		JSONObject result = componentService.createqrcode(authorizer_appid,action_name,expire_seconds,action_info);
 
 		return result;
 	}

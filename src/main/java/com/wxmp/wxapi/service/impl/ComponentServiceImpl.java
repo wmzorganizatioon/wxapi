@@ -153,4 +153,32 @@ public class ComponentServiceImpl implements ComponentService {
         return result;
 
     }
+
+    @Override
+    public String longtToshorturl(String authorizer_appid, String long_url) {
+        Authorizer authorizer = componentDao.queryAuthInfo(authorizer_appid);
+        String authorizerAccessToken = "";
+        if(authorizer!=null){
+            authorizerAccessToken = authorizer.getAuthorizerAccessToken();
+        }else{
+            LOGGER.info("authorizer_appid:"+authorizer_appid+"查询不到authorizerAccessToken");
+            return null;
+        }
+        String result = new WxOpenApi().longtToshorturl(authorizerAccessToken,long_url);
+        return null;
+    }
+
+    @Override
+    public JSONObject createqrcode(String authorizerAppid, String action_name, String expire_seconds, HashMap action_info) {
+        Authorizer authorizer = componentDao.queryAuthInfo(authorizerAppid);
+        String authorizerAccessToken = "";
+        if(authorizer!=null){
+            authorizerAccessToken = authorizer.getAuthorizerAccessToken();
+        }else{
+            LOGGER.info("authorizer_appid:"+authorizerAppid+"查询不到authorizerAccessToken");
+            return null;
+        }
+        JSONObject result = new WxOpenApi().createqrcode(authorizerAccessToken,action_name,expire_seconds,action_info);
+        return result;
+    }
 }
