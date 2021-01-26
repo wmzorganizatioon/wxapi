@@ -165,7 +165,7 @@ public class ComponentServiceImpl implements ComponentService {
             return null;
         }
         String result = new WxOpenApi().longtToshorturl(authorizerAccessToken,long_url);
-        return null;
+        return result;
     }
 
     @Override

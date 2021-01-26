@@ -208,7 +208,7 @@ public class WxOpenApi {
     public JSONObject createqrcode(String authorizerAccessToken, String action_name, String expire_seconds, HashMap action_info) {
         String createqrcodeurl = WxOpenApi.geCreateqrcodeUrl(authorizerAccessToken);
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("action_name","action_name");
+        jsonObject.put("action_name",action_name);
         jsonObject.put("expire_seconds",expire_seconds);
         jsonObject.put("action_info",action_info);
 
